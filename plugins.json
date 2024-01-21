@@ -1,0 +1,41 @@
+[
+    {
+        "iconUrl": "https://www.google.com/s2/favicons?domain=lk21official.cc&sz=%size%",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/psionicdrevus/imsh",
+        "fileSize": 17300,
+        "status": 1,
+        "language": "id",
+        "authors": [
+            "Aviv B.A"
+        ],
+        "tvTypes": [
+            "Movie",
+            "TvSeries",
+            "AsianDrama"
+        ],
+        "version": 1,
+        "internalName": "Layarkaca",
+        "url": "https://raw.githubusercontent.com/psionicdrevus/imsh/builds/Layarkaca.cs3",
+        "name": "Layarkaca"
+    },
+    {
+        "iconUrl": "https://www.google.com/s2/favicons?domain=ngefilm21.pw&sz=%size%",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/psionicdrevus/imsh",
+        "fileSize": 21881,
+        "status": 1,
+        "language": "id",
+        "authors": [
+            "Aviv B.A"
+        ],
+        "tvTypes": [
+            "TvSeries",
+            "Movie"
+        ],
+        "version": 12,
+        "internalName": "Ngefilm",
+        "url": "https://raw.githubusercontent.com/psionicdrevus/imsh/builds/Ngefilm.cs3",
+        "name": "Ngefilm"
+    }
+]
