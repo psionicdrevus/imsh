@@ -1,0 +1,8 @@
+{
+    "name": "Indonesian repository",
+    "description": "Indonesian provider",
+    "manifestVersion": 1,
+    "pluginLists": [
+      "https://raw.githubusercontent.com/avivbintangaringga/cloudstream-extensions/builds/plugins.json"
+    ]
+  }
