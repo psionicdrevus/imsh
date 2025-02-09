@@ -112,14 +112,18 @@ open class Gomov : MainAPI() {
             val episodes = document.select("div.vid-episodes a, div.gmr-listseries a").map { eps ->
                 val href = fixUrl(eps.attr("href"))
                 val name = eps.text()
-                val episode = name.split(" ").lastOrNull()?.filter { it.isDigit() }?.toIntOrNull()
+                // val episode = name.split(" ").lastOrNull()?.filter { it.isDigit() }?.toIntOrNull()
                 val season = name.split(" ").firstOrNull()?.filter { it.isDigit() }?.toIntOrNull()
-                Episode(
-                    href,
-                    name,
-                    season = if(name.contains(" ")) season else null,
-                    episode = episode,
-                )
+                newEpisode(href, {
+                    this.name = name
+                    this.season = season
+                })
+                // Episode(
+                //     href,
+                //     name,
+                //     season = if(name.contains(" ")) season else null,
+                //     episode = episode,
+                // )
             }.filter { it.episode != null }
             newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
                 this.posterUrl = poster
