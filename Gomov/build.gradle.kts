@@ -5,9 +5,9 @@ version = 31
 
 android {
     defaultConfig {
-        //val properties = Properties()
-        //properties.load(project.rootProject.file("local.properties").inputStream())
-        //buildConfigField("String", "ZSHOW_API", "\"${properties.getProperty("ZSHOW_API")}\"")
+        val properties = Properties()
+        properties.load(project.rootProject.file("local.properties").inputStream())
+        buildConfigField("String", "ZSHOW_API", "\"${properties.getProperty("ZSHOW_API")}\"")
     }
 }
 
