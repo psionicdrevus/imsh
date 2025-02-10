@@ -112,24 +112,36 @@ open class Ngefilm : MainAPI() {
     return if (tvType == TvType.TvSeries) {
       val episodes =
               document.select("div.vid-episodes a, div.gmr-listseries a")
+                      .apply({
+                            removeFirst()
+                      })
                       .mapIndexed { index, eps ->
                         val href = fixUrl(eps.attr("href"))
                         val name = eps.text()
                         // val episode = name.split(" ").lastOrNull()?.filter { it.isDigit()
                         // }?.toIntOrNull()
-                        val season =
-                                name.split(" ")
-                                        .firstOrNull()
-                                        ?.filter { it.isDigit() }
-                                        ?.toIntOrNull()
-                        newEpisode(
-                                href,
-                                {
-                                  this.name = name
-                                  this.season = season
-                                  this.episode = index + 1
-                                }
-                        )
+                        // val season =
+                        //         name.split(" ")
+                        //                 .firstOrNull()
+                        //                 ?.filter { it.isDigit() }
+                        //                 ?.toIntOrNull()
+                                        
+                        // newEpisode(
+                        //         href,
+                        //         {
+                        //           this.
+                        //           this.name = name
+                        //           this.season = season
+                        //           this.episode = index + 1
+                        //         }
+                        // )
+
+                        newEpisode(Pair(href, name)) { 
+                            this.name = name
+                            this.season = 1
+                            this.episode = index + 1
+                         }
+
                         // Episode(
                         //     href,
                         //     name,
