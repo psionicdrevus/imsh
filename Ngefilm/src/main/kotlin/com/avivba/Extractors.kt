@@ -94,3 +94,7 @@ class DbGdriveplayer : Gdriveplayer() {
 class GhBrisk : Filesim() {
     override var mainUrl = "https://ghbrisk.com"
 }
+
+class IPlayerHLS : Filesim() {
+    override var mainUrl = "https://iplayerhls.com"
+}

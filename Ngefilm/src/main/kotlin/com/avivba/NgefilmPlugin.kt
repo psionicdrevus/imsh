@@ -20,5 +20,6 @@ class NgefilmPlugin: Plugin() {
         registerExtractorAPI(Kotakajaib())
         registerExtractorAPI(Uplayer())
         registerExtractorAPI(GhBrisk())
+        registerExtractorAPI(IPlayerHLS())
     }
 }
