@@ -111,7 +111,8 @@ open class Ngefilm : MainAPI() {
 
     return if (tvType == TvType.TvSeries) {
         val doc = document.select("div.vid-episodes a, div.gmr-listseries a")
-        doc.removeFirst()
+        // doc.removeFirst()
+        doc.first()?.remove()
         val episodes = doc.map { eps ->
                         val href = fixUrl(eps.attr("href"))
                         val name = eps.text()
