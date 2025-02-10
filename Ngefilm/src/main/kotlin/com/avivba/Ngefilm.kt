@@ -144,7 +144,7 @@ open class Ngefilm : MainAPI() {
                         //     season = if(name.contains(" ")) season else null,
                         //     episode = episode,
                         // )
-                      }.filter { it.name?.lowercase()?.startsWith("pilih") ?: false }
+                      }.filter { it.name?.lowercase()?.startsWith("pilih")?.not() ?: false }
 
       newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
         this.posterUrl = poster
