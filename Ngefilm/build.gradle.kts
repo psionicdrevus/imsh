@@ -1,12 +1,10 @@
 // use an integer for version numbers
-version = 36
+version = 1
 
 cloudstream {
     language = "id"
     // All of these properties are optional, you can safely remove them
-
-    description = "Includes: DutaMovie, Ngefilm, Nodrakorid, Multiplex, Pusatfilm"
-    authors = listOf("Hexated")
+    authors = listOf("Aviv B.A")
 
     /**
      * Status int as the following:
@@ -17,10 +15,9 @@ cloudstream {
      * */
     status = 1 // will be 3 if unspecified
     tvTypes = listOf(
-        "AsianDrama",
         "TvSeries",
         "Movie",
     )
 
-    iconUrl = "https://www.google.com/s2/favicons?domain=gomov.bio&sz=%size%"
+    iconUrl = "https://www.google.com/s2/favicons?domain=ngefilm21.pw&sz=%size%"
 }
