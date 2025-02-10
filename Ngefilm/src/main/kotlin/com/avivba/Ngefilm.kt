@@ -110,12 +110,9 @@ open class Ngefilm : MainAPI() {
             document.select("div.idmuvi-rp ul li").mapNotNull { it.toRecommendResult() }
 
     return if (tvType == TvType.TvSeries) {
-      val episodes =
-              document.select("div.vid-episodes a, div.gmr-listseries a")
-                      .apply({
-                            removeFirst()
-                      })
-                      .mapIndexed { index, eps ->
+        val doc = document.select("div.vid-episodes a, div.gmr-listseries a")
+        doc.removeFirst()
+        val episodes = doc.map { eps ->
                         val href = fixUrl(eps.attr("href"))
                         val name = eps.text()
                         // val episode = name.split(" ").lastOrNull()?.filter { it.isDigit()
@@ -136,10 +133,8 @@ open class Ngefilm : MainAPI() {
                         //         }
                         // )
 
-                        newEpisode(Pair(href, name)) { 
+                        newEpisode(href) { 
                             this.name = name
-                            this.season = 1
-                            this.episode = index + 1
                          }
 
                         // Episode(
@@ -149,7 +144,7 @@ open class Ngefilm : MainAPI() {
                         //     episode = episode,
                         // )
                       }
-                      .filter { it.episode != null }
+
       newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
         this.posterUrl = poster
         this.year = year
@@ -160,6 +155,7 @@ open class Ngefilm : MainAPI() {
         this.recommendations = recommendations
         addTrailer(trailer)
       }
+
     } else {
       newMovieLoadResponse(title, url, TvType.Movie, url) {
         this.posterUrl = poster
