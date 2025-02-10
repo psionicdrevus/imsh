@@ -88,3 +88,9 @@ class Likessb : StreamSB() {
 class DbGdriveplayer : Gdriveplayer() {
     override var mainUrl = "https://database.gdriveplayer.us"
 }
+
+///////
+
+class GhBrisk : Filesim() {
+    override var mainUrl = "https://ghbrisk.com"
+}
