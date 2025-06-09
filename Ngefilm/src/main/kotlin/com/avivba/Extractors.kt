@@ -55,6 +55,11 @@ class OiiaoiiaStream : Chillx() {
     override var mainUrl = "https://oiiaoiia.stream"
 }
 
+class MovEarnPre : VidHidePro() {
+    override var name = "MovEarnPre"
+    override var mainUrl = "https://movearnpre.com"
+}
+
 class Doods : DoodLaExtractor() {
     override var name = "Doods"
     override var mainUrl = "https://doods.pro"
