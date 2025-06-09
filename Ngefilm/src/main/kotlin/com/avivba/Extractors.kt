@@ -60,6 +60,11 @@ class MovEarnPre : VidHidePro() {
     override var mainUrl = "https://movearnpre.com"
 }
 
+class DhcPlay : VidHidePro() {
+    override var name = "DhcPlay"
+    override var mainUrl = "https://dhcplay.com"
+}
+
 class Doods : DoodLaExtractor() {
     override var name = "Doods"
     override var mainUrl = "https://doods.pro"
