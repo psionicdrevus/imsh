@@ -24,5 +24,6 @@ class NgefilmPlugin: Plugin() {
         registerExtractorAPI(IPlayerHLS())
         registerExtractorAPI(OiiaoiiaStream())
         registerExtractorAPI(MovEarnPre())
+        registerExtractorAPI(DhcPlay())
     }
 }
