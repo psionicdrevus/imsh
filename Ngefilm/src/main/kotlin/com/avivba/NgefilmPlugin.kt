@@ -22,11 +22,7 @@ class NgefilmPlugin: Plugin() {
         registerExtractorAPI(Uplayer())
         registerExtractorAPI(GhBrisk())
         registerExtractorAPI(IPlayerHLS())
-<<<<<<< HEAD
         registerExtractorAPI(OiiaoiiaStream())
         registerExtractorAPI(MovEarnPre())
-        registerExtractorAPI(DhcPlay())
-=======
->>>>>>> parent of 5d949d5 (add movearnpre.com extractors)
     }
 }
