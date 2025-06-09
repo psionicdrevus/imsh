@@ -50,6 +50,11 @@ open class Kotakajaib : ExtractorApi() {
 
 }
 
+class OiiaoiiaStream : Chillx() {
+    override var name = "Oiiaoiia"
+    override var mainUrl = "https://oiiaoiia.stream"
+}
+
 class Doods : DoodLaExtractor() {
     override var name = "Doods"
     override var mainUrl = "https://doods.pro"

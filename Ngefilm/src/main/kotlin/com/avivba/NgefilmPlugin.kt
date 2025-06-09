@@ -10,6 +10,7 @@ class NgefilmPlugin: Plugin() {
     override fun load(context: Context) {
         registerMainAPI(Ngefilm())
         registerExtractorAPI(FilelionsTo())
+        registerExtractorAPI(OiiaoiiaStream())
         registerExtractorAPI(Likessb())
         registerExtractorAPI(DbGdriveplayer())
         registerExtractorAPI(Dutamovie21())
