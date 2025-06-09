@@ -1,5 +1,9 @@
 // use an integer for version numbers
+<<<<<<< HEAD
 version = 12
+=======
+version = 10
+>>>>>>> parent of 5d949d5 (add movearnpre.com extractors)
 
 cloudstream {
     language = "id"

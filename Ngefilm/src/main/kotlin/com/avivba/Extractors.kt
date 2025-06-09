@@ -55,6 +55,7 @@ class OiiaoiiaStream : Chillx() {
     override var mainUrl = "https://oiiaoiia.stream"
 }
 
+<<<<<<< HEAD
 class MovEarnPre : VidHidePro() {
     override var name = "MovEarnPre"
     override var mainUrl = "https://movearnpre.com"
@@ -65,6 +66,8 @@ class DhcPlay : VidHidePro() {
     override var mainUrl = "https://dhcplay.com"
 }
 
+=======
+>>>>>>> parent of 5d949d5 (add movearnpre.com extractors)
 class Doods : DoodLaExtractor() {
     override var name = "Doods"
     override var mainUrl = "https://doods.pro"

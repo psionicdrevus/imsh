@@ -10,6 +10,7 @@ class NgefilmPlugin: Plugin() {
     override fun load(context: Context) {
         registerMainAPI(Ngefilm())
         registerExtractorAPI(FilelionsTo())
+        registerExtractorAPI(OiiaoiiaStream())
         registerExtractorAPI(Likessb())
         registerExtractorAPI(DbGdriveplayer())
         registerExtractorAPI(Dutamovie21())
@@ -21,8 +22,11 @@ class NgefilmPlugin: Plugin() {
         registerExtractorAPI(Uplayer())
         registerExtractorAPI(GhBrisk())
         registerExtractorAPI(IPlayerHLS())
+<<<<<<< HEAD
         registerExtractorAPI(OiiaoiiaStream())
         registerExtractorAPI(MovEarnPre())
         registerExtractorAPI(DhcPlay())
+=======
+>>>>>>> parent of 5d949d5 (add movearnpre.com extractors)
     }
 }
