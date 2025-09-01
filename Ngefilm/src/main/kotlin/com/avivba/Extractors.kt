@@ -1,8 +1,9 @@
 package com.avivba
 
 import com.lagradost.cloudstream3.SubtitleFile
-import com.lagradost.cloudstream3.apmap
 import com.lagradost.cloudstream3.app
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import com.lagradost.cloudstream3.base64Decode
 import com.lagradost.cloudstream3.extractors.*
 import com.lagradost.cloudstream3.utils.ExtractorApi
@@ -43,8 +44,12 @@ open class Kotakajaib : ExtractorApi() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ) {
-        app.get(url,referer=referer).document.select("ul#dropdown-server li a").apmap {
-            loadExtractor(base64Decode(it.attr("data-frame")), "$mainUrl/", subtitleCallback, callback)
+        coroutineScope {
+            app.get(url,referer=referer).document.select("ul#dropdown-server li a").forEach {
+                launch {
+                    loadExtractor(base64Decode(it.attr("data-frame")), "$mainUrl/", subtitleCallback, callback)
+                }
+            }
         }
     }
 

@@ -4,6 +4,8 @@ import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 import com.lagradost.cloudstream3.utils.*
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import org.jsoup.nodes.Element
 
 class LayarKacaProvider : MainAPI() {
@@ -122,7 +124,7 @@ class LayarKacaProvider : MainAPI() {
                 this.year = year
                 this.plot = description
                 this.tags = tags
-                this.rating = rating
+                this.score = rating
                 addActors(actors)
                 this.recommendations = recommendations
             }
@@ -156,7 +158,7 @@ class LayarKacaProvider : MainAPI() {
                 this.year = year
                 this.plot = description
                 this.tags = tags
-                this.rating = rating
+                this.score = rating
                 addActors(actors)
                 this.recommendations = recommendations
             }
@@ -170,23 +172,28 @@ class LayarKacaProvider : MainAPI() {
             callback: (ExtractorLink) -> Unit
     ): Boolean {
         val document = app.get(data).document
-        document.select("li > a[data-url]").apmap {
-            val url = it.attr("data-url")
-            when {
-                "emturbovid.com" in url -> {
-                    Emturbovid().getUrl(url, data, subtitleCallback, callback)
-                }
-                "filemoon.sx" in url -> {
-                    FilemoonExtractor().getUrl(url, data, subtitleCallback, callback)
-                }
-                "short.icu" in url -> {
-                    HydraxExtractor().getUrl(url, data, subtitleCallback, callback)
-                }
-                "hownetwork.xyz" in url -> {
-                    HowNetworkExtractor().getUrl(url, data, subtitleCallback, callback)
-                }
-                else -> {
-                    loadExtractor(url, data, subtitleCallback, callback)
+        coroutineScope {
+            document.select("li > a[data-url]").forEach {
+                launch {
+                    val url = it.attr("data-url")
+                    when {
+                        "emturbovid.com" in url -> {
+                            Emturbovid().getUrl(url, data, subtitleCallback, callback)
+                        }
+                        "filemoon.sx" in url -> {
+                            FilemoonExtractor().getUrl(url, data, subtitleCallback, callback)
+                        }
+                        "short.icu" in url -> {
+                            HydraxExtractor().getUrl(url, data, subtitleCallback, callback)
+                        }
+                        "hownetwork.xyz" in url -> {
+                            HowNetworkExtractor().getUrl(url, data, subtitleCallback, callback)
+                        }
+                        else -> {
+                            loadExtractor(url, data, subtitleCallback, callback)
+                        }
+                    }
+
                 }
             }
         }
