@@ -85,6 +85,7 @@ class LayarKacaProvider : MainAPI() {
     override suspend fun search(query: String): List<SearchResponse> {
         // This search logic is likely broken as the selectors are from the old site.
         // It needs to be updated with the HTML from a search results page.
+
         val document = app.get("$mainUrl/search.php?s=$query").document
         return document.select("div.search-item").mapNotNull {
             val title = it.selectFirst("a")?.attr("title") ?: ""
@@ -153,6 +154,7 @@ class LayarKacaProvider : MainAPI() {
                 this.rating = rating
                 addActors(actors)
                 this.recommendations = recommendations
+
             }
         }
     }
@@ -163,12 +165,14 @@ class LayarKacaProvider : MainAPI() {
             subtitleCallback: (SubtitleFile) -> Unit,
             callback: (ExtractorLink) -> Unit
     ): Boolean {
+
         val document = app.get(data).document
         document.select("ul#loadProviders > li").map {
             fixUrl(it.select("a").attr("href"))
         }.apmap {
             loadExtractor(it.getIframe(), "https://nganunganu.sbs", subtitleCallback, callback)
         }
+
         return true
     }
 
