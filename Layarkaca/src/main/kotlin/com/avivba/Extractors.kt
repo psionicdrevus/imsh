@@ -9,7 +9,7 @@ import com.lagradost.cloudstream3.utils.INFER_TYPE
 import com.lagradost.cloudstream3.utils.M3u8Helper
 import com.lagradost.cloudstream3.utils.getQualityFromName
 
-// --- Emturbovid extractor ---
+// ---------------- Emturbovid ----------------
 open class Emturbovid : ExtractorApi() {
     override val name = "Emturbovid"
     override val mainUrl = "https://emturbovid.com"
@@ -21,27 +21,29 @@ open class Emturbovid : ExtractorApi() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ) {
-        val response = app.get(url, referer = referer)
-        val m3u8 = Regex("[\"'](.*?master\\.m3u8.*?)[\"']")
-            .find(response.text)
-            ?.groupValues?.getOrNull(1)
+        val firstPage = app.get(url, referer = referer)
+
+        val embeddedUrl = Regex("""https.*?turboviplay.*?["']""")
+            .find(firstPage.text)
+            ?.value
+            ?.replace("\"", "")
+            ?.replace("'", "")
+
+        if (embeddedUrl == null) return
+
+        val secondPage = app.get(embeddedUrl, referer = url)
+
+        val m3u8 = Regex("""https.*?\.m3u8""")
+            .find(secondPage.text)
+            ?.value
             ?: return
 
-        M3u8Helper.generateM3u8(
-            name,
-            m3u8,
-            mainUrl
-        ).forEach(callback)
+        M3u8Helper.generateM3u8(name, m3u8, mainUrl).forEach(callback)
     }
 }
 
-class Furher : Filesim() {
-    override val name = "Furher"
-    override var mainUrl = "https://furher.in"
-}
-
-// --- Filemoon extractor ---
-open class FilemoonExtractor : ExtractorApi() {
+// ---------------- Filemoon ----------------
+open class Filemoon : ExtractorApi() {
     override val name = "Filemoon"
     override val mainUrl = "https://filemoon.sx"
     override val requiresReferer = true
@@ -52,22 +54,26 @@ open class FilemoonExtractor : ExtractorApi() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ) {
-        val response = app.get(url, referer = referer)
-        val m3u8 = Regex("[\"'](.*?\\.m3u8.*?)[\"']")
-            .find(response.text)
-            ?.groupValues?.getOrNull(1)
+        val firstPage = app.get(url, referer = referer)
+
+        val embeddedUrl = Regex("""src=["'](.*?filemoon.*?)["']""")
+            .find(firstPage.text)
+            ?.groupValues?.get(1)
+
+        val targetUrl = embeddedUrl ?: url
+        val secondPage = app.get(targetUrl, referer = url)
+
+        val m3u8 = Regex("""https.*?\.m3u8""")
+            .find(secondPage.text)
+            ?.value
             ?: return
 
-        M3u8Helper.generateM3u8(
-            name,
-            m3u8,
-            mainUrl
-        ).forEach(callback)
+        M3u8Helper.generateM3u8(name, m3u8, mainUrl).forEach(callback)
     }
 }
 
-// --- Hydrax extractor (short.icu) ---
-open class HydraxExtractor : ExtractorApi() {
+// ---------------- Hydrax ----------------
+open class Hydrax : ExtractorApi() {
     override val name = "Hydrax"
     override val mainUrl = "https://short.icu"
     override val requiresReferer = true
@@ -78,22 +84,56 @@ open class HydraxExtractor : ExtractorApi() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ) {
-        val response = app.get(url, referer = referer)
-        val m3u8 = Regex("[\"'](.*?\\.m3u8.*?)[\"']")
-            .find(response.text)
-            ?.groupValues?.getOrNull(1)
+        val firstPage = app.get(url, referer = referer)
+
+        val embeddedUrl = Regex("""src=["'](.*?hydrax.*?)["']""")
+            .find(firstPage.text)
+            ?.groupValues?.get(1)
+
+        val targetUrl = embeddedUrl ?: url
+        val secondPage = app.get(targetUrl, referer = url)
+
+        val m3u8 = Regex("""https.*?\.m3u8""")
+            .find(secondPage.text)
+            ?.value
             ?: return
 
-        M3u8Helper.generateM3u8(
-            name,
-            m3u8,
-            mainUrl
-        ).forEach(callback)
+        M3u8Helper.generateM3u8(name, m3u8, mainUrl).forEach(callback)
     }
 }
 
-// --- HowNetwork extractor (P2P) ---
-open class HowNetworkExtractor : ExtractorApi() {
+// ---------------- Furher ----------------
+open class Furher : ExtractorApi() {
+    override val name = "Furher"
+    override val mainUrl = "https://furher.in"
+    override val requiresReferer = true
+
+    override suspend fun getUrl(
+        url: String,
+        referer: String?,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ) {
+        val firstPage = app.get(url, referer = referer)
+
+        val embeddedUrl = Regex("""src=["'](.*?furher.*?)["']""")
+            .find(firstPage.text)
+            ?.groupValues?.get(1)
+
+        val targetUrl = embeddedUrl ?: url
+        val secondPage = app.get(targetUrl, referer = url)
+
+        val m3u8 = Regex("""https.*?\.m3u8""")
+            .find(secondPage.text)
+            ?.value
+            ?: return
+
+        M3u8Helper.generateM3u8(name, m3u8, mainUrl).forEach(callback)
+    }
+}
+
+// ---------------- HowNetwork ----------------
+open class HowNetwork : ExtractorApi() {
     override val name = "HowNetwork"
     override val mainUrl = "https://cloud.hownetwork.xyz"
     override val requiresReferer = true
@@ -104,16 +144,20 @@ open class HowNetworkExtractor : ExtractorApi() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ) {
-        val response = app.get(url, referer = referer)
-        val m3u8 = Regex("[\"'](.*?\\.m3u8.*?)[\"']")
-            .find(response.text)
-            ?.groupValues?.getOrNull(1)
+        val firstPage = app.get(url, referer = referer)
+
+        val embeddedUrl = Regex("""src=["'](.*?hownetwork.*?)["']""")
+            .find(firstPage.text)
+            ?.groupValues?.get(1)
+
+        val targetUrl = embeddedUrl ?: url
+        val secondPage = app.get(targetUrl, referer = url)
+
+        val m3u8 = Regex("""https.*?\.m3u8""")
+            .find(secondPage.text)
+            ?.value
             ?: return
 
-        M3u8Helper.generateM3u8(
-            name,
-            m3u8,
-            mainUrl
-        ).forEach(callback)
+        M3u8Helper.generateM3u8(name, m3u8, mainUrl).forEach(callback)
     }
 }
