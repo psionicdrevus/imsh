@@ -66,17 +66,23 @@ class LayarKacaProvider : MainAPI() {
             posterUrl = fixUrlNull(this.selectFirst("div.poster img, figure.figure-film img")?.attr("data-src"))
         }
 
+        // If poster is null, we can't show it, so return null.
+        // This also solves the nullability issue.
+        val finalPosterUrl = posterUrl ?: return null
+
         val isMovie = this.selectFirst("span.episode") == null
 
         return if(isMovie) {
             newMovieSearchResponse(title, href, TvType.Movie) {
-                this.posterUrl = posterUrl
-                addQuality(this@toSearchResult.selectFirst("span.label")?.text()?.trim())
+                this.posterUrl = finalPosterUrl
+                this@toSearchResult.selectFirst("span.label")?.text()?.trim()?.let { quality ->
+                    addQuality(quality)
+                }
             }
         } else {
             val episode = this.selectFirst("span.episode strong")?.text()?.toIntOrNull()
             newAnimeSearchResponse(title, href, TvType.TvSeries) {
-                this.posterUrl = posterUrl
+                this.posterUrl = finalPosterUrl
                 addSub(episode)
             }
         }
