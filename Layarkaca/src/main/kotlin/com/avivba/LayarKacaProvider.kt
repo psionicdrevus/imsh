@@ -2,9 +2,7 @@ package com.avivba
 
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
-import com.lagradost.cloudstream3.newEpisode
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
-import com.lagradost.cloudstream3.extractors.Filesim
 import com.lagradost.cloudstream3.utils.*
 import org.jsoup.nodes.Element
 
@@ -23,15 +21,28 @@ class LayarKacaProvider : MainAPI() {
     )
 
     override val mainPage = mainPageOf(
-            "$mainUrl/latest/page/" to "Film Terbaru"
+            "$mainUrl/latest/page/" to "Film Terbaru",
+            "$mainUrl/populer/page/" to "Film Terplopuler",
+            "$mainUrl/rating/page/" to "Film Berdasarkan IMDb Rating",
+            "$mainUrl/most-commented/page/" to "Film Dengan Komentar Terbanyak",
+            "$seriesUrl/latest-series/" to "Series Terbaru",
+            "$seriesUrl/series/asian/page/" to "Film Asian Terbaru"
     )
 
     override suspend fun getMainPage(
             page: Int,
             request: MainPageRequest
     ): HomePageResponse {
-        val document = app.get(request.data + page).document
-        val home = document.select("article.mega-item").mapNotNull {
+        val url = if (page == 1 && request.data.endsWith("/page/")) {
+            request.data.removeSuffix("page/")
+        } else if (page > 1 && request.data.endsWith("/page/")) {
+            request.data + page
+        } else {
+            request.data // For series URLs that might not have pagination
+        }
+
+        val document = app.get(url).document
+        val home = document.select("div.col-film, article[itemscope]").mapNotNull {
             it.toSearchResult()
         }
         return newHomePageResponse(request.name, home)
@@ -48,28 +59,33 @@ class LayarKacaProvider : MainAPI() {
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val title = this.selectFirst("h1.grid-title > a")?.ownText()?.trim() ?: return null
         val href = fixUrl(this.selectFirst("a")!!.attr("href"))
-        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("src"))
-        val type =
-                if (this.selectFirst("div.last-episode") == null) TvType.Movie else TvType.TvSeries
-        return if (type == TvType.TvSeries) {
-            val episode = this.selectFirst("div.last-episode span")?.text()?.filter { it.isDigit() }
-                    ?.toIntOrNull()
+        val title = this.selectFirst("h3.poster-title, h3.figcaption-title > a")?.text()?.trim() ?: return null
+        var posterUrl = fixUrlNull(this.selectFirst("div.poster img, figure.figure-film img")?.attr("src"))
+        if (posterUrl == null) {
+            posterUrl = fixUrlNull(this.selectFirst("div.poster img, figure.figure-film img")?.attr("data-src"))
+        }
+
+        val isMovie = this.selectFirst("span.episode") == null
+
+        return if(isMovie) {
+            newMovieSearchResponse(title, href, TvType.Movie) {
+                this.posterUrl = posterUrl
+                addQuality(this@toSearchResult.selectFirst("span.label")?.text()?.trim())
+            }
+        } else {
+            val episode = this.selectFirst("span.episode strong")?.text()?.toIntOrNull()
             newAnimeSearchResponse(title, href, TvType.TvSeries) {
                 this.posterUrl = posterUrl
                 addSub(episode)
-            }
-        } else {
-            val quality = this.select("div.quality").text().trim()
-            newMovieSearchResponse(title, href, TvType.Movie) {
-                this.posterUrl = posterUrl
-                addQuality(quality)
             }
         }
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
+        // This search logic is likely broken as the selectors are from the old site.
+        // It needs to be updated with the HTML from a search results page.
+
         val document = app.get("$mainUrl/search.php?s=$query").document
         return document.select("div.search-item").mapNotNull {
             val title = it.selectFirst("a")?.attr("title") ?: ""
@@ -82,59 +98,20 @@ class LayarKacaProvider : MainAPI() {
     }
 
     override suspend fun load(url: String): LoadResponse? {
-        val fixUrl = getProperLink(url)
-        val document = app.get(fixUrl ?: return null).document
+        val document = app.get(url).document
 
-        val title = document.selectFirst("li.last > span[itemprop=name]")?.text()?.trim().toString()
-        val poster = fixUrl(document.select("img.img-thumbnail").attr("src").toString())
-        val tags = document.select("div.content > div:nth-child(5) > h3 > a").map { it.text() }
+        val isMovie = !url.startsWith(seriesUrl)
 
-        val year = Regex("\\d, (\\d+)").find(
-                document.select("div.content > div:nth-child(7) > h3").text().trim()
-        )?.groupValues?.get(1).toString().toIntOrNull()
-        val tvType = if (document.select("div.serial-wrapper")
-                        .isNotEmpty()
-        ) TvType.TvSeries else TvType.Movie
-        val description = document.select("div.content > blockquote").text().trim()
-        val trailer = document.selectFirst("div.action-player li > a.fancybox")?.attr("href")
-        val rating =
-                document.selectFirst("div.content > div:nth-child(6) > h3")?.text()?.toRatingInt()
-        val actors =
-                document.select("div.col-xs-9.content > div:nth-child(3) > h3 > a").map { it.text() }
+        return if (isMovie) {
+            val title = document.selectFirst("h1")?.text()?.trim() ?: return null
+            val poster = fixUrlNull(document.selectFirst("div.movie-info figure img")?.attr("src"))
+            val tags = document.select("div.tag-list a").map { it.text() }
+            val year = Regex("\\((\\d{4})\\)").find(title)?.groupValues?.get(1)?.toIntOrNull()
+            val description = document.selectFirst("div.synopsis")?.text()?.trim()
+            val rating = document.selectFirst("div.info-tag > span > strong")?.text()?.toRatingInt()
+            val actors = document.select("p:contains(Bintang Film) a, p:contains(Aktor) a").map { it.text() }
+            val recommendations = emptyList<SearchResponse>()
 
-        val recommendations = document.select("div.row.item-media").map {
-            val recName = it.selectFirst("h3")?.text()?.trim().toString()
-            val recHref = it.selectFirst(".content-media > a")!!.attr("href")
-            val recPosterUrl =
-                    fixUrl(it.selectFirst(".poster-media > a > img")?.attr("src").toString())
-            newTvSeriesSearchResponse(recName, recHref, TvType.TvSeries) {
-                this.posterUrl = recPosterUrl
-            }
-        }
-
-        return if (tvType == TvType.TvSeries) {
-            val episodes = document.select("div.episode-list > a:matches(\\d+)").map {
-                val href = fixUrl(it.attr("href"))
-                val episode = it.text().toIntOrNull()
-                val season =
-                        it.attr("href").substringAfter("season-").substringBefore("-").toIntOrNull()
-                newEpisode(href) {
-                    this.name = "Episode $episode"
-                    this.season = season
-                    this.episode = episode
-                }
-            }.reversed()
-            newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
-                this.posterUrl = poster
-                this.year = year
-                this.plot = description
-                this.tags = tags
-                this.rating = rating
-                addActors(actors)
-                this.recommendations = recommendations
-                addTrailer(trailer)
-            }
-        } else {
             newMovieLoadResponse(title, url, TvType.Movie, url) {
                 this.posterUrl = poster
                 this.year = year
@@ -143,7 +120,41 @@ class LayarKacaProvider : MainAPI() {
                 this.rating = rating
                 addActors(actors)
                 this.recommendations = recommendations
-                addTrailer(trailer)
+            }
+        } else {
+            // TV Series load logic
+            val title = document.selectFirst("h1")?.text()?.trim() ?: return null
+            val poster = fixUrlNull(document.selectFirst("div.movie-info figure img")?.attr("src"))
+            val tags = document.select("div.tag-list a").map { it.text() }
+            val year = Regex("\\((\\d{4})\\)").find(title)?.groupValues?.get(1)?.toIntOrNull()
+            val description = document.selectFirst("div.synopsis")?.text()?.trim()
+            val rating = document.selectFirst("div.info-tag > span > strong")?.text()?.toRatingInt()
+            val actors = document.select("p:contains(Bintang Film) a, p:contains(Aktor) a").map { it.text() }
+            val recommendations = emptyList<SearchResponse>()
+
+            // THIS EPISODE LOGIC IS A PLACEHOLDER AND LIKELY BROKEN.
+            // It is copied from the user's original code and needs to be updated
+            // with information about the site's AJAX calls for episodes.
+            val episodes = document.select("div.episode-list > a:matches(\\d+)").map {
+                val href = fixUrl(it.attr("href"))
+                val episode = it.text().toIntOrNull()
+                val season = it.attr("href").substringAfter("season-").substringBefore("-").toIntOrNull()
+                newEpisode(href) {
+                    this.name = "Episode $episode"
+                    this.season = season
+                    this.episode = episode
+                }
+            }.reversed()
+
+            newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
+                this.posterUrl = poster
+                this.year = year
+                this.plot = description
+                this.tags = tags
+                this.rating = rating
+                addActors(actors)
+                this.recommendations = recommendations
+
             }
         }
     }
@@ -166,7 +177,7 @@ class LayarKacaProvider : MainAPI() {
     }
 
     private suspend fun String.getIframe() : String {
+        // This referer might need to be changed based on the extractor.
         return app.get(this, referer = "$seriesUrl/").document.select("div.embed iframe").attr("src")
     }
-
 }
