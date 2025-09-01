@@ -128,7 +128,6 @@ class LayarKacaProvider : MainAPI() {
                     this.season = season
                     this.episode = episode
                 }
-
             }.reversed()
             newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
                 this.posterUrl = poster
