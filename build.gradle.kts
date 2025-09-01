@@ -42,7 +42,7 @@ subprojects {
 
     cloudstream {
         // when running through github workflow, GITHUB_REPOSITORY should contain current repository name
-        setRepo("https://github.com/avivbintangaringga/cloudstream-extensions")
+        setRepo("https://github.com/${System.getenv("GITHUB_REPOSITORY") ?: "psionicdrevus/imsh"}")
         authors = listOf("Aviv B.A")
     }
 
