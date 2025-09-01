@@ -5,6 +5,7 @@ import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.extractors.Filesim
 import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.newExtractorLink
 import com.lagradost.cloudstream3.utils.INFER_TYPE
 import com.lagradost.cloudstream3.utils.M3u8Helper
 import com.lagradost.cloudstream3.utils.getQualityFromName
@@ -57,7 +58,7 @@ open class Hownetwork : ExtractorApi() {
 
         res?.data?.map {
             callback.invoke(
-                    ExtractorLink(
+                    newExtractorLink(
                             this.name,
                             this.name,
                             it.file,

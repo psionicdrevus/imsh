@@ -2,6 +2,7 @@ package com.avivba
 
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
+import com.lagradost.cloudstream3.newEpisode
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 import com.lagradost.cloudstream3.extractors.Filesim
 import com.lagradost.cloudstream3.utils.*
@@ -9,8 +10,8 @@ import org.jsoup.nodes.Element
 
 class LayarKacaProvider : MainAPI() {
 
-    override var mainUrl = "https://tv6.lk21official.cc"
-    private var seriesUrl = "https://tv1.nontondrama.my"
+    override var mainUrl = LayarKacaUrlFetcher.mainUrl
+    private val seriesUrl = LayarKacaUrlFetcher.seriesUrl
 
     override var name = "LayarKaca"
     override val hasMainPage = true
@@ -122,12 +123,12 @@ class LayarKacaProvider : MainAPI() {
                 val episode = it.text().toIntOrNull()
                 val season =
                         it.attr("href").substringAfter("season-").substringBefore("-").toIntOrNull()
-                Episode(
-                        href,
-                        "Episode $episode",
-                        season,
-                        episode,
-                )
+                newEpisode(href) {
+                    this.name = "Episode $episode"
+                    this.season = season
+                    this.episode = episode
+                }
+
             }.reversed()
             newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
                 this.posterUrl = poster
