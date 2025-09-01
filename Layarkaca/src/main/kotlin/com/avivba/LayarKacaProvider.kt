@@ -172,7 +172,23 @@ class LayarKacaProvider : MainAPI() {
         val document = app.get(data).document
         document.select("li > a[data-url]").apmap {
             val url = it.attr("data-url")
-            loadExtractor(url, data, subtitleCallback, callback)
+            when {
+                "emturbovid.com" in url -> {
+                    Emturbovid().getUrl(url, data, subtitleCallback, callback)
+                }
+                "filemoon.sx" in url -> {
+                    FilemoonExtractor().getUrl(url, data, subtitleCallback, callback)
+                }
+                "short.icu" in url -> {
+                    HydraxExtractor().getUrl(url, data, subtitleCallback, callback)
+                }
+                "hownetwork.xyz" in url -> {
+                    HowNetworkExtractor().getUrl(url, data, subtitleCallback, callback)
+                }
+                else -> {
+                    loadExtractor(url, data, subtitleCallback, callback)
+                }
+            }
         }
         return true
     }
