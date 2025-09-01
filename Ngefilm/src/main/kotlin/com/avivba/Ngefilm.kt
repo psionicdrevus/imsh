@@ -8,6 +8,8 @@ import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.httpsify
 import com.lagradost.cloudstream3.utils.loadExtractor
 import java.net.URI
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.jsoup.nodes.Element
 
@@ -126,7 +128,7 @@ open class Ngefilm : MainAPI() {
                 this.year = year
                 this.plot = description
                 this.tags = tags
-                this.rating = rating
+                this.score = rating
                 addActors(actors)
                 this.recommendations = recommendations
                 addTrailer(trailer)
@@ -138,7 +140,7 @@ open class Ngefilm : MainAPI() {
                 this.year = year
                 this.plot = description
                 this.tags = tags
-                this.rating = rating
+                this.score = rating
                 addActors(actors)
                 this.recommendations = recommendations
                 addTrailer(trailer)
@@ -156,36 +158,42 @@ open class Ngefilm : MainAPI() {
         val document = app.get(data).document
         val id = document.selectFirst("div#muvipro_player_content_id")?.attr("data-id")
 
-        if (id.isNullOrEmpty()) {
-            document.select("ul.muvipro-player-tabs li a").apmap { ele ->
-                val iframe =
-                    app.get(fixUrl(ele.attr("href")))
-                        .document
-                        .selectFirst("div.gmr-embed-responsive iframe")
-                        .getIframeAttr()
-                        ?.let { httpsify(it) }
-                        ?: return@apmap
+        coroutineScope {
+            if (id.isNullOrEmpty()) {
+                document.select("ul.muvipro-player-tabs li a").forEach { ele ->
+                    launch {
+                        val iframe =
+                            app.get(fixUrl(ele.attr("href")))
+                                .document
+                                .selectFirst("div.gmr-embed-responsive iframe")
+                                .getIframeAttr()
+                                ?.let { httpsify(it) }
+                                ?: return@launch
 
-                loadExtractor(iframe, "$directUrl/", subtitleCallback, callback)
-            }
-        } else {
-            document.select("div.tab-content-ajax").apmap { ele ->
-                val server =
-                    app.post(
-                        "$directUrl/wp-admin/admin-ajax.php",
-                        data =
-                            mapOf(
-                                "action" to "muvipro_player_content",
-                                "tab" to ele.attr("id"),
-                                "post_id" to "$id"
+                        loadExtractor(iframe, "$directUrl/", subtitleCallback, callback)
+                    }
+                }
+            } else {
+                document.select("div.tab-content-ajax").forEach { ele ->
+                    launch {
+                        val server =
+                            app.post(
+                                "$directUrl/wp-admin/admin-ajax.php",
+                                data =
+                                mapOf(
+                                    "action" to "muvipro_player_content",
+                                    "tab" to ele.attr("id"),
+                                    "post_id" to "$id"
+                                )
                             )
-                    )
-                        .document
-                        .select("iframe")
-                        .attr("src")
-                        .let { httpsify(it) }
+                                .document
+                                .select("iframe")
+                                .attr("src")
+                                .let { httpsify(it) }
 
-                loadExtractor(server, "$directUrl/", subtitleCallback, callback)
+                        loadExtractor(server, "$directUrl/", subtitleCallback, callback)
+                    }
+                }
             }
         }
 
