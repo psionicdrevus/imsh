@@ -124,7 +124,6 @@ class LayarKacaProvider : MainAPI() {
                 this.year = year
                 this.plot = description
                 this.tags = tags
-                this.score = rating?.toDouble()
                 addActors(actors)
                 this.recommendations = recommendations
             }
@@ -158,7 +157,6 @@ class LayarKacaProvider : MainAPI() {
                 this.year = year
                 this.plot = description
                 this.tags = tags
-                this.score = rating?.toDouble()
                 addActors(actors)
                 this.recommendations = recommendations
             }
