@@ -6,10 +6,7 @@ import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.M3u8Helper
-// =======================================================
-// THIS IS THE FIX: We must import the 'eval' function
-// =======================================================
-import com.lagradost.cloudstream3.utils.eval
+import com.lagradost.cloudstream3.utils.JsUnpacker
 
 
 /**
@@ -33,13 +30,11 @@ abstract class PackerExtractor : ExtractorApi() {
             return
         }
 
-        // Now that 'eval' is imported, this will work correctly
-        val unpackedText = eval(packedJS)
+        val unpackedText = JsUnpacker.unpack(packedJS)
         if (unpackedText == null) {
             return
         }
 
-        // The second error will also be fixed because 'unpackedText' is now correctly identified as a String
         val m3u8Url = Regex("""(https?:\/\/[^"']+\.m3u8)""").find(unpackedText)?.groupValues?.get(1)
         if (m3u8Url == null) {
             return
@@ -49,7 +44,6 @@ abstract class PackerExtractor : ExtractorApi() {
     }
 }
 
-// The rest of the file remains the same
 open class Emturbovid : PackerExtractor() {
     override val name = "Emturbovid"
     override val mainUrl = "https://emturbovid.com"
