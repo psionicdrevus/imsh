@@ -10,7 +10,7 @@ on:
     
   push:
     branches:
-      # choose yours default branch
+      # choose your default branch
       - master
       - main
     paths-ignore:
