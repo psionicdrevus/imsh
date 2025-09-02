@@ -6,16 +6,26 @@ import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.M3u8Helper
-import com.lagradost.cloudstream3.utils.JsUnpacker
 
-
-/**
- * This is a base class for extractors that use a common JavaScript packing method.
- * The logic is to find a script block that looks like `eval(function(p,a,c,k,e,d){...})`,
- * execute it to get the deobfuscated code, and then find the m3u8 link within that code.
- */
 abstract class PackerExtractor : ExtractorApi() {
     override val requiresReferer = true
+
+    private fun unpack(packedJs: String): String? {
+        try {
+            val data = Regex("""}\('(.*)',(\d+),(\d+),'([^']*)'\.split\('\|'\)""").find(packedJs)?.groupValues ?: return null
+            var payload = data[1]
+            val radix = data[2].toIntOrNull() ?: return null
+            var count = data[3].toIntOrNull() ?: return null
+            val keys = data[4].split("|")
+            while (count-- > 0) {
+                val key = count.toString(radix)
+                payload = payload.replace(Regex("\\b$key\\b"), keys.getOrElse(count) { key })
+            }
+            return payload
+        } catch (e: Exception) {
+            return null
+        }
+    }
 
     override suspend fun getUrl(
         url: String,
@@ -24,21 +34,11 @@ abstract class PackerExtractor : ExtractorApi() {
         callback: (ExtractorLink) -> Unit
     ) {
         val response = app.get(url, referer = referer).text
+        val packedJS = Regex("""eval\(function\(p,a,c,k,e,d\).*?\)""").find(response)?.value ?: return
 
-        val packedJS = Regex("""eval\(function\(p,a,c,k,e,d\).*?\)""").find(response)?.value
-        if (packedJS == null) {
-            return
-        }
+        val unpackedText = unpack(packedJS) ?: return
 
-        val unpackedText = JsUnpacker.unpack(packedJS)
-        if (unpackedText == null) {
-            return
-        }
-
-        val m3u8Url = Regex("""(https?:\/\/[^"']+\.m3u8)""").find(unpackedText)?.groupValues?.get(1)
-        if (m3u8Url == null) {
-            return
-        }
+        val m3u8Url = Regex("""(https?:\/\/[^"']+\.m3u8)""").find(unpackedText)?.groupValues?.get(1) ?: return
 
         M3u8Helper.generateM3u8(name, m3u8Url, url).forEach(callback)
     }
