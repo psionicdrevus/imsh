@@ -110,6 +110,7 @@ open class Furher : PackerExtractor() {
     override val name = "Furher"
     override val mainUrl = "https://furher.in"
 }
+
 open class HowNetwork : PackerExtractor() {
     override val name = "HowNetwork"
     override val mainUrl = "https://cloud.hownetwork.xyz"
