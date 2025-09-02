@@ -128,7 +128,6 @@ open class Ngefilm : MainAPI() {
                 this.year = year
                 this.plot = description
                 this.tags = tags
-                this.score = rating
                 addActors(actors)
                 this.recommendations = recommendations
                 addTrailer(trailer)
@@ -140,7 +139,6 @@ open class Ngefilm : MainAPI() {
                 this.year = year
                 this.plot = description
                 this.tags = tags
-                this.score = rating
                 addActors(actors)
                 this.recommendations = recommendations
                 addTrailer(trailer)
