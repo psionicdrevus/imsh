@@ -10,6 +10,9 @@ class LayarKacaProviderPlugin: Plugin() {
         // All providers should be added in this manner. Please don't edit the providers list directly.
         registerMainAPI(LayarKacaProvider())
         registerExtractorAPI(Emturbovid())
+        registerExtractorAPI(Filemoon())
+        registerExtractorAPI(Hydrax())
+        registerExtractorAPI(HowNetwork())
         registerExtractorAPI(Furher())
     }
 }

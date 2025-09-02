@@ -124,7 +124,7 @@ class LayarKacaProvider : MainAPI() {
                 this.year = year
                 this.plot = description
                 this.tags = tags
-                this.score = rating
+                this.score = rating?.toDouble()
                 addActors(actors)
                 this.recommendations = recommendations
             }
@@ -158,7 +158,7 @@ class LayarKacaProvider : MainAPI() {
                 this.year = year
                 this.plot = description
                 this.tags = tags
-                this.score = rating
+                this.score = rating?.toDouble()
                 addActors(actors)
                 this.recommendations = recommendations
             }
@@ -181,13 +181,16 @@ class LayarKacaProvider : MainAPI() {
                             Emturbovid().getUrl(url, data, subtitleCallback, callback)
                         }
                         "filemoon.sx" in url -> {
-                            FilemoonExtractor().getUrl(url, data, subtitleCallback, callback)
+                            Filemoon().getUrl(url, data, subtitleCallback, callback)
                         }
                         "short.icu" in url -> {
-                            HydraxExtractor().getUrl(url, data, subtitleCallback, callback)
+                            Hydrax().getUrl(url, data, subtitleCallback, callback)
                         }
                         "hownetwork.xyz" in url -> {
-                            HowNetworkExtractor().getUrl(url, data, subtitleCallback, callback)
+                            HowNetwork().getUrl(url, data, subtitleCallback, callback)
+                        }
+                        "furher.in" in url -> {
+                            Furher().getUrl(url, data, subtitleCallback, callback)
                         }
                         else -> {
                             loadExtractor(url, data, subtitleCallback, callback)
