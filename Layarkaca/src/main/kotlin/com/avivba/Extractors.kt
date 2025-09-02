@@ -2,118 +2,68 @@ package com.avivba
 
 import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.app
-import com.lagradost.cloudstream3.extractors.Filesim
 import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.INFER_TYPE
 import com.lagradost.cloudstream3.utils.M3u8Helper
-import com.lagradost.cloudstream3.utils.getQualityFromName
+import com.lagradost.cloudstream3.utils.JsUnpacker
 
-// --- Emturbovid extractor ---
-open class Emturbovid : ExtractorApi() {
+
+/**
+ * This is a base class for extractors that use a common JavaScript packing method.
+ * The logic is to find a script block that looks like `eval(function(p,a,c,k,e,d){...})`,
+ * execute it to get the deobfuscated code, and then find the m3u8 link within that code.
+ */
+abstract class PackerExtractor : ExtractorApi() {
+    override val requiresReferer = true
+
+    override suspend fun getUrl(
+        url: String,
+        referer: String?,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ) {
+        val response = app.get(url, referer = referer).text
+
+        val packedJS = Regex("""eval\(function\(p,a,c,k,e,d\).*?\)""").find(response)?.value
+        if (packedJS == null) {
+            return
+        }
+
+        val unpackedText = JsUnpacker.unpack(packedJS)
+        if (unpackedText == null) {
+            return
+        }
+
+        val m3u8Url = Regex("""(https?:\/\/[^"']+\.m3u8)""").find(unpackedText)?.groupValues?.get(1)
+        if (m3u8Url == null) {
+            return
+        }
+
+        M3u8Helper.generateM3u8(name, m3u8Url, url).forEach(callback)
+    }
+}
+
+open class Emturbovid : PackerExtractor() {
     override val name = "Emturbovid"
     override val mainUrl = "https://emturbovid.com"
-    override val requiresReferer = true
-
-    override suspend fun getUrl(
-        url: String,
-        referer: String?,
-        subtitleCallback: (SubtitleFile) -> Unit,
-        callback: (ExtractorLink) -> Unit
-    ) {
-        val response = app.get(url, referer = referer)
-        val m3u8 = Regex("[\"'](.*?master\\.m3u8.*?)[\"']")
-            .find(response.text)
-            ?.groupValues?.getOrNull(1)
-            ?: return
-
-        M3u8Helper.generateM3u8(
-            name,
-            m3u8,
-            mainUrl
-        ).forEach(callback)
-    }
 }
 
-class Furher : Filesim() {
-    override val name = "Furher"
-    override var mainUrl = "https://furher.in"
-}
-
-// --- Filemoon extractor ---
-open class FilemoonExtractor : ExtractorApi() {
+open class Filemoon : PackerExtractor() {
     override val name = "Filemoon"
     override val mainUrl = "https://filemoon.sx"
-    override val requiresReferer = true
-
-    override suspend fun getUrl(
-        url: String,
-        referer: String?,
-        subtitleCallback: (SubtitleFile) -> Unit,
-        callback: (ExtractorLink) -> Unit
-    ) {
-        val response = app.get(url, referer = referer)
-        val m3u8 = Regex("[\"'](.*?\\.m3u8.*?)[\"']")
-            .find(response.text)
-            ?.groupValues?.getOrNull(1)
-            ?: return
-
-        M3u8Helper.generateM3u8(
-            name,
-            m3u8,
-            mainUrl
-        ).forEach(callback)
-    }
 }
 
-// --- Hydrax extractor (short.icu) ---
-open class HydraxExtractor : ExtractorApi() {
+open class Hydrax : PackerExtractor() {
     override val name = "Hydrax"
     override val mainUrl = "https://short.icu"
-    override val requiresReferer = true
-
-    override suspend fun getUrl(
-        url: String,
-        referer: String?,
-        subtitleCallback: (SubtitleFile) -> Unit,
-        callback: (ExtractorLink) -> Unit
-    ) {
-        val response = app.get(url, referer = referer)
-        val m3u8 = Regex("[\"'](.*?\\.m3u8.*?)[\"']")
-            .find(response.text)
-            ?.groupValues?.getOrNull(1)
-            ?: return
-
-        M3u8Helper.generateM3u8(
-            name,
-            m3u8,
-            mainUrl
-        ).forEach(callback)
-    }
 }
 
-// --- HowNetwork extractor (P2P) ---
-open class HowNetworkExtractor : ExtractorApi() {
+open class Furher : PackerExtractor() {
+    override val name = "Furher"
+    override val mainUrl = "https://furher.in"
+}
+
+open class HowNetwork : PackerExtractor() {
     override val name = "HowNetwork"
     override val mainUrl = "https://cloud.hownetwork.xyz"
-    override val requiresReferer = true
-
-    override suspend fun getUrl(
-        url: String,
-        referer: String?,
-        subtitleCallback: (SubtitleFile) -> Unit,
-        callback: (ExtractorLink) -> Unit
-    ) {
-        val response = app.get(url, referer = referer)
-        val m3u8 = Regex("[\"'](.*?\\.m3u8.*?)[\"']")
-            .find(response.text)
-            ?.groupValues?.getOrNull(1)
-            ?: return
-
-        M3u8Helper.generateM3u8(
-            name,
-            m3u8,
-            mainUrl
-        ).forEach(callback)
-    }
 }
